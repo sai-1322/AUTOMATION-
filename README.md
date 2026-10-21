@@ -12,7 +12,7 @@ A single-file web app for sending daily WhatsApp birthday wishes to your contact
 
 ## How to use
 
-1. Open `birthday-wishes-standalone.html` in Chrome or Edge (or host it with GitHub Pages).
+1. Open `index.html` in Chrome or Edge, or host it free with GitHub Pages (Settings → Pages → deploy from `main`).
 2. Upload your contact sheet once.
 3. Each day, open the page and tap **Send wish** for the people listed under Today.
 
