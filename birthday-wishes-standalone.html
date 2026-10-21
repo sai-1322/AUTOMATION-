@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rane Birthday Wishes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --ink: #142033;
+    --muted: #5b6678;
+    --line: #d9dee6;
+    --accent: #128c4a;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3f4ea;
+    --warn-bg: #fff4dc;
+    --warn-ink: #7a5200;
+    --focus: #1f5fd6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1622; --panel: #172133; --ink: #e8edf5; --muted: #98a4b8; --line: #2a374d;
+      --accent: #2fb56e; --accent-ink: #062314; --accent-soft: #143324;
+      --warn-bg: #3a2e10; --warn-ink: #f2cf82; --focus: #7aa8ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1622; --panel: #172133; --ink: #e8edf5; --muted: #98a4b8; --line: #2a374d;
+    --accent: #2fb56e; --accent-ink: #062314; --accent-soft: #143324;
+    --warn-bg: #3a2e10; --warn-ink: #f2cf82; --focus: #7aa8ff;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 16px; line-height: 1.5;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 4px; font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 20px; max-width: 62ch; }
+
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  label { display: block; font-weight: 500; margin-bottom: 6px; }
+  textarea, input[type="text"], input[type="search"], select {
+    width: 100%; font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+  }
+  textarea { resize: vertical; min-height: 200px; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-top: 12px; }
+  .row > div { flex: 1 1 160px; }
+  .hint { color: var(--muted); font-size: 0.9rem; margin: 8px 0 0; }
+  .err { color: var(--warn-ink); background: var(--warn-bg); padding: 8px 10px; border-radius: 8px; }
+
+  button { font: inherit; cursor: pointer; }
+  button.primary { font-weight: 600; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 11px 18px; }
+  button.ghost { color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 9px 14px; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .drop {
+    border: 2px dashed var(--line); border-radius: 10px; padding: 26px 14px; text-align: center;
+    cursor: pointer; display: flex; flex-direction: column; gap: 4px; background: var(--bg);
+  }
+  .drop span { color: var(--muted); font-size: 0.9rem; }
+  .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+
+  .loaded { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .loaded strong { display: block; }
+  .loaded span { color: var(--muted); font-size: 0.9rem; }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tab {
+    border: 1px solid var(--line); background: transparent; color: var(--ink);
+    border-radius: 999px; padding: 8px 14px; min-height: 40px;
+  }
+  .tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .tab .n { opacity: 0.8; margin-left: 4px; }
+
+  .count { font-weight: 600; margin: 0 0 6px; }
+  ul.list { list-style: none; margin: 0; padding: 0; }
+  ul.list li {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 12px 0; border-top: 1px solid var(--line);
+  }
+  ul.list li:first-child { border-top: 0; }
+  .who { min-width: 0; flex: 1 1 200px; }
+  .who strong { display: block; overflow-wrap: anywhere; }
+  .who span { color: var(--muted); font-size: 0.9rem; display: block; }
+  .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  a.send {
+    display: inline-block; text-decoration: none; font-weight: 600;
+    background: var(--accent); color: var(--accent-ink); border-radius: 8px; padding: 11px 16px; min-height: 44px;
+  }
+  a.web { color: var(--muted); font-size: 0.9rem; }
+  button.undo { border: 0; background: transparent; color: var(--muted); text-decoration: underline; padding: 6px; font-size: 0.9rem; }
+  li.done a.send { background: var(--accent-soft); color: var(--ink); }
+  li.done .who strong::after { content: "  (opened)"; color: var(--muted); font-weight: 400; font-size: 0.9rem; }
+  .empty { color: var(--muted); margin: 4px 0 0; }
+
+  details summary { cursor: pointer; font-weight: 500; }
+  details[open] summary { margin-bottom: 12px; }
+  .warn { background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; padding: 10px 12px; font-size: 0.92rem; }
+  .warn ul { margin: 6px 0 0; padding-left: 18px; }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .cc { max-width: 110px; }
+  [hidden] { display: none !important; }
+  .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .thumbs:empty { display: none; }
+  .thumb { position: relative; }
+  .thumb img { display: block; height: 84px; max-width: 140px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+  .thumb button {
+    position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; font: inherit; line-height: 1; padding: 0;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Rane birthday wishes</h1>
+  <p class="sub">Upload your contact sheet once. Each day, open this page and tap <strong>Send wish</strong> for the people whose birthday it is. Your sheet is read in your browser and saved only on this device.</p>
+
+  <section id="uploadSec">
+    <div id="emptyBox">
+      <label for="file">Contact sheet (Excel or CSV)</label>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose or drop your contact sheet">
+        <strong>Choose your Excel or CSV file, or drop it here</strong>
+        <span>Needs columns: Name, Phone, Birthday</span>
+      </div>
+    </div>
+    <div id="loadedBox" class="loaded" hidden>
+      <div>
+        <strong id="fileTitle"></strong>
+        <span id="fileMeta"></span>
+      </div>
+      <div class="btns">
+        <button class="ghost" id="replace" type="button">Replace sheet</button>
+        <button class="ghost" id="remove" type="button">Remove list</button>
+      </div>
+    </div>
+    <input id="file" type="file" accept=".xlsx,.xls,.csv,.tsv,.txt" hidden>
+    <p class="hint" id="status" hidden></p>
+    <details id="mapBox" hidden style="margin-top:14px">
+      <summary>Columns used (change if wrong)</summary>
+      <div class="grid3">
+        <div><label for="mName">Name</label><select id="mName"></select></div>
+        <div><label for="mPhone">Phone</label><select id="mPhone"></select></div>
+        <div><label for="mDob">Birthday</label><select id="mDob"></select></div>
+      </div>
+      <p class="hint">Birthday can be a date cell or text like 15-03-1985, 15/03, or 15 Mar. The year is optional.</p>
+    </details>
+  </section>
+
+
+  <section id="imgSec">
+    <label for="imgFile">Or add contacts from an image</label>
+    <input id="imgFile" type="file" accept="image/*" multiple hidden>
+    <div class="drop" id="imgDrop" tabindex="0" role="button" aria-label="Choose or drop images of contacts">
+      <strong>Choose image, take photo, or drop it here</strong>
+      <span>Contact list, visiting card, or screenshot &middot; you can also paste with Ctrl+V</span>
+    </div>
+    <div class="thumbs" id="imgThumbs"></div>
+    <div class="row">
+      <button class="primary" id="imgRead" type="button" disabled>Read numbers from image</button>
+      <button class="ghost" id="imgStop" type="button" hidden>Stop</button>
+    </div>
+    <p class="hint" id="imgStatus">Works on any device with internet. The first read downloads the reading engine (about 10 MB), after that it's fast.</p>
+    <p class="hint" id="imgCount" hidden></p>
+  </section>
+
+  <section id="listSec" hidden>
+    <div class="tabs" id="tabs" role="group" aria-label="Which birthdays to show"></div>
+    <div id="searchBox" hidden style="margin-bottom:10px">
+      <label for="q" class="hint" style="margin:0 0 4px">Search name or number</label>
+      <input id="q" type="search" autocomplete="off">
+    </div>
+    <p class="count" id="listCount"></p>
+    <ul class="list" id="list"></ul>
+    <p class="empty" id="emptyMsg" hidden></p>
+  </section>
+
+  <section id="issuesSec" hidden>
+    <details>
+      <summary id="issuesTitle">Needs checking</summary>
+      <div class="warn"><ul id="issues"></ul></div>
+    </details>
+  </section>
+
+  <section>
+    <details>
+      <summary>Settings and birthday message</summary>
+      <div class="row" style="margin-top:0">
+        <div class="cc"><label for="cc">Country code</label><input id="cc" type="text" inputmode="numeric" value="91" maxlength="4"></div>
+      </div>
+      <p class="hint">Numbers without a country code get this code.</p>
+      <label for="msg" style="margin-top:14px">Birthday message</label>
+      <textarea id="msg"></textarea>
+      <p class="hint">You can write {name} in the message to insert the person's name.</p>
+      <div class="row"><div style="flex:0 0 auto"><button class="ghost" id="reset" type="button">Restore original message</button></div></div>
+    </details>
+  </section>
+</main>
+
+<script>
+(function () {
+  var DEFAULT_MSG =
+    "\uD83C\uDF89 *Happy Birthday from Rane Engineers and Surveyors!* \uD83C\uDF89\n\n" +
+    "On this special day, we want to take a moment to celebrate you! Your trust and partnership mean the world to us, and we are grateful to have you as part of our Rane family.\n\n" +
+    "May this year bring you happiness, success, and all the wonderful things you deserve. Cheers to another year of great achievements and memorable moments!\n\n" +
+    "Wishing you a fantastic birthday!\n\n" +
+    "Warm regards,\nThe Rane Engineers and Surveyors Team";
+
+  var $ = function (id) { return document.getElementById(id); };
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function store(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  var MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  var MON_LONG = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  var S = { raw: null, map: { name: -1, phone: -1, dob: -1 }, contacts: [], issues: [], view: "today", fileName: "" };
+  var sent = {};
+  var imgContacts = [];
+
+  var msgEl = $("msg"), ccEl = $("cc");
+  msgEl.value = load("rane_msg") || DEFAULT_MSG;
+  if (load("rane_cc")) ccEl.value = load("rane_cc");
+  msgEl.addEventListener("input", function () { store("rane_msg", msgEl.value); renderList(); });
+  ccEl.addEventListener("input", function () { store("rane_cc", ccEl.value); build(); renderAll(); });
+  $("reset").addEventListener("click", function () { msgEl.value = DEFAULT_MSG; store("rane_msg", DEFAULT_MSG); renderList(); });
+
+  // ---------- dates ----------
+  function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+  function dim(m, y) { return [31, isLeap(y) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1]; }
+  function today0() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+  function addDays(d, k) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + k); }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function dateToIso(d) { var t = new Date(d.getTime() + 12 * 3600 * 1000); return iso(t); }
+
+  function fullYear(y) {
+    y = parseInt(y, 10);
+    if (y < 100) { var cur = new Date().getFullYear() % 100; return y <= cur ? 2000 + y : 1900 + y; }
+    return y;
+  }
+  function valid(m, d, y) { return m >= 1 && m <= 12 && d >= 1 && d <= dim(m, y || 2000); }
+
+  function parseBirthday(v) {
+    if (v === null || v === undefined) return null;
+    var y = null, m, d, x;
+    if (typeof v === "number") {
+      if (v > 1 && v < 100000) {
+        var t = new Date(Math.round((v - 25569) * 86400000));
+        m = t.getUTCMonth() + 1; d = t.getUTCDate(); y = t.getUTCFullYear();
+        return valid(m, d, y) ? { m: m, d: d, y: y } : null;
+      }
+      return null;
+    }
+    var s = String(v).trim();
+    if (!s) return null;
+    if ((x = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))) { y = +x[1]; m = +x[2]; d = +x[3]; }
+    else if ((x = s.match(/^(\d{1,2})[-\/. ](\d{1,2})[-\/. ](\d{2,4})$/))) {
+      d = +x[1]; m = +x[2]; y = fullYear(x[3]);
+      if (m > 12 && d <= 12) { var tmp = d; d = m; m = tmp; }
+    }
+    else if ((x = s.match(/^(\d{1,2})[-\/.](\d{1,2})$/))) { d = +x[1]; m = +x[2]; if (m > 12 && d <= 12) { var t2 = d; d = m; m = t2; } }
+    else if ((x = s.match(/^(\d{1,2})(?:st|nd|rd|th)?[-\/. ,]*([A-Za-z]{3,})\.?[-\/. ,]*(\d{2,4})?$/))) {
+      d = +x[1]; m = MONTHS.indexOf(x[2].slice(0, 3).toLowerCase()) + 1; y = x[3] ? fullYear(x[3]) : null;
+    }
+    else if ((x = s.match(/^([A-Za-z]{3,})\.?[-\/. ,]*(\d{1,2})(?:st|nd|rd|th)?(?:[-\/. ,]+(\d{2,4}))?$/))) {
+      m = MONTHS.indexOf(x[1].slice(0, 3).toLowerCase()) + 1; d = +x[2]; y = x[3] ? fullYear(x[3]) : null;
+    }
+    else return null;
+    if (y !== null && (y < 1900 || y > 2100)) y = null;
+    return valid(m, d, y) ? { m: m, d: d, y: y } : null;
+  }
+
+  // ---------- phone ----------
+  function normalize(raw, defCc) {
+    var hadPlus = /^\s*\+/.test(raw);
+    var d = raw.replace(/\D/g, "");
+    if (d.indexOf("00") === 0) { d = d.slice(2); hadPlus = true; }
+    if (hadPlus) return (d.length >= 8 && d.length <= 15) ? d : null;
+    if (defCc === "91") {
+      if (d.length === 10 && /^[6-9]/.test(d)) return "91" + d;
+      if (d.length === 11 && d.charAt(0) === "0" && /^[6-9]/.test(d.slice(1))) return "91" + d.slice(1);
+      if (d.length === 12 && d.indexOf("91") === 0 && /^[6-9]/.test(d.slice(2))) return d;
+      return null;
+    }
+    if (d.length === 12 && d.indexOf(defCc) === 0) return d;
+    if (d.length >= 8 && d.length <= 11) return defCc + d.replace(/^0+/, "");
+    return null;
+  }
+  function phoneFromCell(v) {
+    var s = (v === null || v === undefined) ? "" : String(v).trim();
+    if (typeof v === "number") s = String(Math.round(v));
+    var m = s.match(/\+?\d[\d\s\-().]{6,}\d/);
+    return { text: s, raw: m ? m[0] : s };
+  }
+  function pretty(num) {
+    if (num.indexOf("91") === 0 && num.length === 12) return "+91 " + num.slice(2, 7) + " " + num.slice(7);
+    return "+" + num;
+  }
+
+  // ---------- reading files ----------
+  function parseCsv(text, delim) {
+    if (!delim) {
+      var first = text.split(/\r?\n/)[0] || "";
+      var c = (first.match(/,/g) || []).length, sc = (first.match(/;/g) || []).length, tb = (first.match(/\t/g) || []).length;
+      delim = tb > c && tb >= sc ? "\t" : (sc > c ? ";" : ",");
+    }
+    var rows = [], row = [], cur = "", q = false, i, ch;
+    text = text.replace(/^\uFEFF/, "");
+    for (i = 0; i < text.length; i++) {
+      ch = text.charAt(i);
+      if (q) {
+        if (ch === '"') { if (text.charAt(i + 1) === '"') { cur += '"'; i++; } else q = false; }
+        else cur += ch;
+      } else if (ch === '"') q = true;
+      else if (ch === delim) { row.push(cur); cur = ""; }
+      else if (ch === "\n" || ch === "\r") {
+        if (ch === "\r" && text.charAt(i + 1) === "\n") i++;
+        row.push(cur); rows.push(row); row = []; cur = "";
+      } else cur += ch;
+    }
+    if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+    return rows;
+  }
+
+  function detect(headers, rows) {
+    var low = headers.map(function (h) { return String(h).toLowerCase().trim(); });
+    function find(res, skip) {
+      for (var r = 0; r < res.length; r++) for (var i = 0; i < low.length; i++) {
+        if (skip.indexOf(i) === -1 && res[r].test(low[i])) return i;
+      }
+      return -1;
+    }
+    var phone = find([/phone|mobile|whatsapp|cell|\bmob/, /contact\s*(no|number)|number|\bno\.?$/], []);
+    var dob = find([/birth|dob|b'?day|d\.o\.b/, /date/], [phone]);
+    var name = find([/name/], [phone, dob]);
+    var n = headers.length, i, k, best, bestN;
+    function nonBlank(col) { return rows.map(function (r) { return r[col]; }).filter(function (v) { return v !== "" && v !== null && v !== undefined; }); }
+    if (phone < 0) {
+      best = -1; bestN = 0;
+      for (i = 0; i < n; i++) {
+        var cnt = nonBlank(i).filter(function (v) { return /\d{8,}/.test(String(v).replace(/[\s\-().+]/g, "")); }).length;
+        if (cnt > bestN) { bestN = cnt; best = i; }
+      }
+      phone = best;
+    }
+    if (dob < 0) {
+      best = -1; bestN = 0;
+      for (i = 0; i < n; i++) {
+        if (i === phone || i === name) continue;
+        var vals = nonBlank(i);
+        if (!vals.length) continue;
+        var ok = vals.filter(function (v) { return parseBirthday(v); }).length;
+        if (ok / vals.length >= 0.6 && ok > bestN) { bestN = ok; best = i; }
+      }
+      dob = best;
+    }
+    if (name < 0) { for (k = 0; k < n; k++) if (k !== phone && k !== dob) { name = k; break; } }
+    return { name: name, phone: phone, dob: dob };
+  }
+
+  function build() {
+    S.contacts = []; S.issues = [];
+    var defCc = ccEl.value.replace(/\D/g, "") || "91", seen = {};
+    if (S.raw) S.raw.rows.forEach(function (row, i) {
+      var rowNo = S.raw.h + 2 + i;
+      var name = S.map.name >= 0 && row[S.map.name] != null ? String(row[S.map.name]).replace(/\s+/g, " ").trim() : "";
+      var pc = S.map.phone >= 0 ? phoneFromCell(row[S.map.phone]) : { text: "", raw: "" };
+      if (!name && !pc.text) return;
+      if (/^example/i.test(name)) return;
+      var num = pc.text ? normalize(pc.raw, defCc) : null;
+      if (!num) { S.issues.push("Row " + rowNo + (name ? " (" + name + ")" : "") + ": " + (pc.text ? "phone number \"" + pc.text + "\" is not valid" : "no phone number")); return; }
+      if (seen[num]) return;
+      seen[num] = true;
+      var b = null, dv = S.map.dob >= 0 ? row[S.map.dob] : "";
+      if (dv !== "" && dv !== null && dv !== undefined) {
+        b = parseBirthday(dv);
+        if (!b) S.issues.push("Row " + rowNo + (name ? " (" + name + ")" : "") + ": birthday \"" + dv + "\" was not understood, so this contact has no birthday date");
+      }
+      S.contacts.push({ name: name, num: num, m: b ? b.m : 0, d: b ? b.d : 0, y: b ? b.y : null });
+    });
+    imgContacts.forEach(function (c) {
+      if (seen[c.num]) return;
+      seen[c.num] = true;
+      S.contacts.push({ name: c.name || "", num: c.num, m: 0, d: 0, y: null, fromImage: true });
+    });
+  }
+
+  function persist() {
+    var ok = store("rane_data", JSON.stringify({ raw: S.raw, map: S.map, fileName: S.fileName }));
+    var st = $("status");
+    if (!ok) { st.hidden = false; st.className = "hint err"; st.textContent = "Could not save the list on this device. It will work now, but you will need to upload the sheet again next time."; }
+  }
+
+  function setStatus(t, isErr) { var st = $("status"); st.hidden = !t; st.textContent = t || ""; st.className = isErr ? "hint err" : "hint"; }
+
+  async function handleFile(f) {
+    if (!f) return;
+    setStatus("Reading your sheet...");
+    var ext = (f.name.split(".").pop() || "").toLowerCase(), rows;
+    try {
+      if (ext === "csv" || ext === "txt" || ext === "tsv") {
+        rows = parseCsv(await f.text(), ext === "tsv" ? "\t" : null);
+      } else {
+        if (!window.XLSX) throw new Error("The Excel reader could not load. Check your internet connection, or save the sheet as CSV and upload that.");
+        var wb = window.XLSX.read(await f.arrayBuffer(), { type: "array", cellDates: true });
+        var sn = wb.SheetNames.filter(function (n) { return /contact/i.test(n); })[0] || wb.SheetNames[0];
+        rows = window.XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: true, defval: "" });
+      }
+    } catch (e) { setStatus("Could not read that file. " + (e && e.message ? e.message : ""), true); return; }
+
+    rows = rows.map(function (r) {
+      return r.map(function (v) { return v instanceof Date ? dateToIso(v) : (v === null || v === undefined ? "" : v); });
+    });
+    var h = -1;
+    for (var i = 0; i < rows.length; i++) { if (rows[i].some(function (v) { return String(v).trim() !== ""; })) { h = i; break; } }
+    if (h < 0) { setStatus("That file looks empty.", true); return; }
+    var headers = rows[h].map(function (v, k) { var s = String(v).trim(); return s || "Column " + (k + 1); });
+    var data = rows.slice(h + 1).filter(function (r) { return r.some(function (v) { return String(v).trim() !== ""; }); });
+    S.raw = { headers: headers, rows: data, h: h };
+    S.map = detect(headers, data);
+    S.fileName = f.name;
+    S.view = "today";
+    build(); persist(); renderAll();
+    if (!S.contacts.length) setStatus("No usable contacts found. Check the column choices under \"Columns used\".", true);
+    else setStatus("");
+  }
+
+  // ---------- views ----------
+  function occurs(c, day) {
+    if (!c.m) return false;
+    var m = day.getMonth() + 1, d = day.getDate();
+    if (c.m === 2 && c.d === 29 && !isLeap(day.getFullYear())) return m === 2 && d === 28;
+    return c.m === m && c.d === d;
+  }
+  function byName(a, b) { return (a.c.name || a.c.num).toLowerCase() < (b.c.name || b.c.num).toLowerCase() ? -1 : 1; }
+  function range(from, to) {
+    var t = today0(), out = [];
+    for (var k = from; k <= to; k++) {
+      var day = addDays(t, k), part = [];
+      for (var i = 0; i < S.contacts.length; i++) if (occurs(S.contacts[i], day)) part.push({ c: S.contacts[i], day: day, off: k });
+      part.sort(byName); out = out.concat(part);
+    }
+    return out;
+  }
+  function allSorted() {
+    var t = today0(), withB = [], noB = [];
+    S.contacts.forEach(function (c) {
+      if (!c.m) { noB.push({ c: c, day: null, off: null }); return; }
+      for (var k = 0; k <= 366; k++) { var day = addDays(t, k); if (occurs(c, day)) { withB.push({ c: c, day: day, off: k }); return; } }
+      noB.push({ c: c, day: null, off: null });
+    });
+    withB.sort(function (a, b) { return a.off - b.off || byName(a, b); });
+    noB.sort(byName);
+    return withB.concat(noB);
+  }
+  function isSent(it) { return it.day && sent[iso(it.day) + "|" + it.c.num]; }
+  function missed() { return range(-3, -1).filter(function (it) { return !isSent(it); }); }
+
+  function dayLabel(it) {
+    if (!it.day) return "No birthday date";
+    var o = it.off, base;
+    if (o === 0) base = "Today"; else if (o === 1) base = "Tomorrow"; else if (o === -1) base = "Yesterday";
+    else if (o < 0) base = Math.abs(o) + " days ago";
+    else base = DAYS[it.day.getDay()] + " " + it.day.getDate() + " " + MON_LONG[it.day.getMonth()];
+    if (it.c.y) {
+      var age = it.day.getFullYear() - it.c.y;
+      if (age > 0 && age < 120) base += " \u00B7 " + (o < 0 ? "turned " : "turns ") + age;
+    }
+    return base;
+  }
+
+  function msgFor(name) { var m = msgEl.value; if (!/\{name\}/i.test(m)) return m; return m.replace(/\{name\}/gi, name || "").replace(/ +([,.!])/g, "$1"); }
+
+  var TABS = [
+    { id: "today", label: "Today", get: function () { return range(0, 0); }, badge: function (l) { return l.length; } },
+    { id: "tomorrow", label: "Tomorrow", get: function () { return range(1, 1); }, badge: function (l) { return l.length; } },
+    { id: "week", label: "Next 7 days", get: function () { return range(1, 7); }, badge: function (l) { return l.length; } },
+    { id: "missed", label: "Missed", get: missed, badge: function (l) { return l.length; } },
+    { id: "all", label: "All contacts", get: allSorted, badge: function (l) { return l.length; } }
+  ];
+
+  function renderTabs() {
+    $("tabs").innerHTML = TABS.map(function (t) {
+      var n = t.badge(t.get());
+      return '<button class="tab" type="button" data-view="' + t.id + '" aria-pressed="' + (S.view === t.id) + '">' + t.label + '<span class="n">' + n + "</span></button>";
+    }).join("");
+  }
+
+  function renderList() {
+    if (!S.contacts.length) return;
+    var tab = TABS.filter(function (t) { return t.id === S.view; })[0] || TABS[0];
+    var items = tab.get();
+    var q = $("q").value.trim().toLowerCase();
+    $("searchBox").hidden = S.view !== "all";
+    if (S.view === "all" && q) {
+      var qd = q.replace(/\D/g, "");
+      items = items.filter(function (it) { return (it.c.name || "").toLowerCase().indexOf(q) > -1 || (qd && it.c.num.indexOf(qd) > -1); });
+    }
+    var opened = items.filter(isSent).length;
+    var head = items.length + (items.length === 1 ? " person" : " people");
+    if (S.view !== "all" && items.length) head += " \u00B7 " + opened + " opened";
+    $("listCount").textContent = items.length ? head : "";
+    var text = function (name) { return encodeURIComponent(msgFor(name)); };
+    $("list").innerHTML = items.map(function (it) {
+      var key = it.day ? iso(it.day) + "|" + it.c.num : "";
+      var wa = "https://wa.me/" + it.c.num + "?text=" + text(it.c.name);
+      var web = "https://web.whatsapp.com/send?phone=" + it.c.num + "&text=" + text(it.c.name);
+      var done = key && sent[key];
+      var undo = done ? '<button class="undo" type="button" data-key="' + esc(key) + '">Undo</button>' : "";
+      return '<li class="' + (done ? "done" : "") + '"><div class="who"><strong>' + esc(it.c.name || pretty(it.c.num)) + "</strong><span>" +
+        pretty(it.c.num) + " \u00B7 " + esc(dayLabel(it)) + "</span></div>" +
+        '<div class="actions"><a class="send" href="' + wa + '" target="_blank" rel="noopener noreferrer" data-key="' + esc(key) + '">Send wish</a>' +
+        '<a class="web" href="' + web + '" target="_blank" rel="noopener noreferrer" data-key="' + esc(key) + '">WhatsApp Web</a>' + undo + "</div></li>";
+    }).join("");
+
+    var em = $("emptyMsg");
+    if (!items.length) {
+      var msg = "Nothing to show here.";
+      if (S.view === "today") {
+        var nxt = allSorted().filter(function (it) { return it.day && it.off > 0; })[0];
+        msg = "No birthdays today." + (nxt ? " Next: " + (nxt.c.name || pretty(nxt.c.num)) + ", " + dayLabel(nxt).split(" \u00B7 ")[0] + "." : "");
+      } else if (S.view === "tomorrow") msg = "No birthdays tomorrow.";
+      else if (S.view === "week") msg = "No birthdays in the next 7 days.";
+      else if (S.view === "missed") msg = "Nothing missed in the last 3 days.";
+      else if (q) msg = "No contact matches your search.";
+      em.textContent = msg; em.hidden = false;
+    } else em.hidden = true;
+  }
+
+  function renderIssues() {
+    $("issuesSec").hidden = !S.issues.length;
+    $("issuesTitle").textContent = "Needs checking (" + S.issues.length + ")";
+    $("issues").innerHTML = S.issues.slice(0, 200).map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("");
+  }
+
+  function fillSelect(id, headers, val, allowNone) {
+    var el = $(id);
+    el.innerHTML = (allowNone ? '<option value="-1">(none)</option>' : "") + headers.map(function (h, i) { return '<option value="' + i + '">' + esc(h) + "</option>"; }).join("");
+    el.value = String(val);
+  }
+
+  function renderAll() {
+    var has = !!S.raw;
+    $("emptyBox").hidden = has; $("loadedBox").hidden = !has; $("mapBox").hidden = !has;
+    $("listSec").hidden = !S.contacts.length;
+    if (has) {
+      $("fileTitle").textContent = S.fileName || "Saved contact list";
+      var withB = S.contacts.filter(function (c) { return c.m; }).length;
+      $("fileMeta").textContent = S.contacts.length + " contacts, " + withB + " with a birthday date";
+      fillSelect("mName", S.raw.headers, S.map.name, true);
+      fillSelect("mPhone", S.raw.headers, S.map.phone, true);
+      fillSelect("mDob", S.raw.headers, S.map.dob, true);
+    }
+    renderIssues(); renderTabs(); renderList();
+  }
+
+  // ---------- events ----------
+  var drop = $("drop"), file = $("file");
+  drop.addEventListener("click", function () { file.click(); });
+  drop.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); file.click(); } });
+  ["dragenter", "dragover"].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+  file.addEventListener("change", function () { handleFile(file.files[0]); file.value = ""; });
+  $("replace").addEventListener("click", function () { file.click(); });
+
+  var confirmTimer = null;
+  $("remove").addEventListener("click", function () {
+    var b = $("remove");
+    if (b.dataset.sure === "1") {
+      clearTimeout(confirmTimer); b.dataset.sure = ""; b.textContent = "Remove list";
+      S.raw = null; S.contacts = []; S.issues = []; S.fileName = "";
+      store("rane_data", ""); setStatus(""); renderAll();
+    } else {
+      b.dataset.sure = "1"; b.textContent = "Tap again to remove";
+      confirmTimer = setTimeout(function () { b.dataset.sure = ""; b.textContent = "Remove list"; }, 4000);
+    }
+  });
+
+  function onMap() {
+    S.map = { name: +$("mName").value, phone: +$("mPhone").value, dob: +$("mDob").value };
+    build(); persist(); renderAll();
+  }
+  ["mName", "mPhone", "mDob"].forEach(function (id) { $(id).addEventListener("change", onMap); });
+
+  $("tabs").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button.tab") : null;
+    if (!b) return;
+    S.view = b.getAttribute("data-view"); renderTabs(); renderList();
+  });
+  $("q").addEventListener("input", renderList);
+
+  $("list").addEventListener("click", function (e) {
+    var y = window.scrollY;
+    var u = e.target.closest ? e.target.closest("button.undo") : null;
+    if (u) { delete sent[u.getAttribute("data-key")]; store("rane_sent", JSON.stringify(sent)); renderTabs(); renderList(); window.scrollTo(0, y); return; }
+    var a = e.target.closest ? e.target.closest("a.send, a.web") : null;
+    if (a && a.getAttribute("data-key")) {
+      sent[a.getAttribute("data-key")] = 1; store("rane_sent", JSON.stringify(sent));
+      setTimeout(function () { renderTabs(); renderList(); window.scrollTo(0, y); }, 50);
+    }
+  });
+
+  // ---------- image reading (runs in the browser, no account needed) ----------
+  var imgFile = $("imgFile"), imgDrop = $("imgDrop"), imgThumbs = $("imgThumbs"), imgReadBtn = $("imgRead"), imgStopBtn = $("imgStop"), imgStatus = $("imgStatus"), imgCountEl = $("imgCount");
+  var MAX_IMAGES = 10, pendingImages = [], ocrWorkers = [], ocrStopped = false;
+  var V = "5.1.1";
+  var OCR_SOURCES = [
+    { script: "https://cdn.jsdelivr.net/npm/tesseract.js@" + V + "/dist/tesseract.min.js",
+      workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@" + V + "/dist/worker.min.js",
+      corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@" + V,
+      langPath: "https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int" },
+    { script: "https://unpkg.com/tesseract.js@" + V + "/dist/tesseract.min.js",
+      workerPath: "https://unpkg.com/tesseract.js@" + V + "/dist/worker.min.js",
+      corePath: "https://unpkg.com/tesseract.js-core@" + V,
+      langPath: "https://unpkg.com/@tesseract.js-data/eng@1.0.0/4.0.0_best_int" },
+    { script: "https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/" + V + "/tesseract.min.js",
+      workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@" + V + "/dist/worker.min.js",
+      corePath: "https://unpkg.com/tesseract.js-core@" + V,
+      langPath: "https://tessdata.projectnaptha.com/4.0.0_best" }
+  ];
+  function loadScript(src) {
+    return new Promise(function (res, rej) {
+      var t = document.createElement("script"); t.src = src; t.onload = res; t.onerror = function () { rej(new Error("Could not load " + src)); };
+      document.head.appendChild(t);
+    });
+  }
+  async function ensureOcrScript() {
+    if (window.Tesseract) return;
+    for (var i = 0; i < OCR_SOURCES.length && !window.Tesseract; i++) { try { await loadScript(OCR_SOURCES[i].script); } catch (e) {} }
+    if (!window.Tesseract) throw new Error("The reading engine could not be downloaded from any server.");
+  }
+  async function makeOcrWorker(logger) {
+    var lastErr = null;
+    for (var i = 0; i < OCR_SOURCES.length; i++) {
+      var src = OCR_SOURCES[i];
+      try { return await window.Tesseract.createWorker("eng", 1, { workerPath: src.workerPath, corePath: src.corePath, langPath: src.langPath, logger: logger }); }
+      catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error("Could not start the reading engine.");
+  }
+
+  function setImgStatus(t, isErr) { imgStatus.textContent = t; imgStatus.className = isErr ? "hint err" : "hint"; }
+  function refreshImgBtn() { imgReadBtn.disabled = !pendingImages.length; }
+
+  function drawImgThumbs() {
+    imgThumbs.innerHTML = "";
+    pendingImages.forEach(function (it, i) {
+      var d = document.createElement("div"); d.className = "thumb";
+      var im = document.createElement("img"); im.src = it.url; im.alt = "Selected image " + (i + 1);
+      var x = document.createElement("button"); x.type = "button"; x.textContent = "\u00D7"; x.setAttribute("aria-label", "Remove image " + (i + 1));
+      x.addEventListener("click", function () { pendingImages.splice(i, 1); drawImgThumbs(); refreshImgBtn(); });
+      d.appendChild(im); d.appendChild(x); imgThumbs.appendChild(d);
+    });
+  }
+  function addImgFiles(list) {
+    Array.prototype.slice.call(list).forEach(function (f) {
+      if (!/^image\//.test(f.type)) return;
+      if (pendingImages.length >= MAX_IMAGES) { setImgStatus("Limit is " + MAX_IMAGES + " images at a time.", true); return; }
+      var item = { blob: f, url: "" };
+      pendingImages.push(item);
+      var r = new FileReader();
+      r.onload = function () { item.url = r.result; drawImgThumbs(); };
+      r.readAsDataURL(f);
+    });
+    drawImgThumbs(); refreshImgBtn();
+  }
+  imgDrop.addEventListener("click", function () { imgFile.click(); });
+  imgDrop.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); imgFile.click(); } });
+  imgFile.addEventListener("change", function () { addImgFiles(imgFile.files); imgFile.value = ""; });
+  ["dragenter", "dragover"].forEach(function (n) { imgDrop.addEventListener(n, function (e) { e.preventDefault(); imgDrop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (n) { imgDrop.addEventListener(n, function (e) { e.preventDefault(); imgDrop.classList.remove("over"); }); });
+  imgDrop.addEventListener("drop", function (e) { if (e.dataTransfer) addImgFiles(e.dataTransfer.files); });
+  document.addEventListener("paste", function (e) {
+    var f = e.clipboardData && e.clipboardData.files;
+    if (f && f.length) addImgFiles(f);
+  });
+
+  function loadImgEl(item) {
+    return new Promise(function (resolve, reject) {
+      var im = new Image(); im.onload = function () { resolve(im); }; im.onerror = reject; im.src = item.url;
+    });
+  }
+  // Split one photo into a full pass + overlapping zoomed tiles so every card gets read
+  function planPasses(im) {
+    var W = im.naturalWidth || im.width, H = im.naturalHeight || im.height;
+    var t = document.createElement("canvas"); t.width = 64; t.height = Math.max(1, Math.round(64 * H / W));
+    var tx = t.getContext("2d"); tx.fillStyle = "#fff"; tx.fillRect(0, 0, t.width, t.height); tx.drawImage(im, 0, 0, t.width, t.height);
+    var p = tx.getImageData(0, 0, t.width, t.height).data, sum = 0, i;
+    for (i = 0; i < p.length; i += 4) sum += 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2];
+    var invert = (sum / (p.length / 4)) < 110;
+    var cols = Math.min(3, Math.max(1, Math.round(W / 800))), rows = Math.min(4, Math.max(1, Math.round(H / 700)));
+    var passes = [{ x: 0, y: 0, w: W, h: H }];
+    if (cols * rows > 1) {
+      var tw = W / cols, th = H / rows, ox = tw * 0.14, oy = th * 0.14, r, c, x0, y0, x1, y1;
+      for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+        x0 = Math.max(0, c * tw - ox); y0 = Math.max(0, r * th - oy);
+        x1 = Math.min(W, (c + 1) * tw + ox); y1 = Math.min(H, (r + 1) * th + oy);
+        passes.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+      }
+    }
+    return { invert: invert, passes: passes };
+  }
+  function passCanvas(im, rg, invert) {
+    var sc = Math.min(3, Math.max(1.5, 2200 / rg.w));
+    var maxPx = 14e6; if (rg.w * sc * rg.h * sc > maxPx) sc = Math.sqrt(maxPx / (rg.w * rg.h));
+    var c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(rg.w * sc)); c.height = Math.max(1, Math.round(rg.h * sc));
+    var x = c.getContext("2d");
+    x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
+    x.drawImage(im, rg.x, rg.y, rg.w, rg.h, 0, 0, c.width, c.height);
+    var d = x.getImageData(0, 0, c.width, c.height), p = d.data, i, g;
+    for (i = 0; i < p.length; i += 4) { g = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]; if (invert) g = 255 - g; p[i] = p[i + 1] = p[i + 2] = g; }
+    x.putImageData(d, 0, 0);
+    return c;
+  }
+  function cleanImgName(n) { return n.replace(/[^A-Za-z .'&]/g, " ").replace(/\s+/g, " ").trim().replace(/^[.\s]+|[.\s]+$/g, ""); }
+
+  var CONF = { O: "0", o: "0", I: "1", l: "1", "|": "1", S: "5", B: "8", Z: "2" };
+  function fixConfusables(line) {
+    return line.replace(/[+(]?\d[\dOoIl|SBZ ()\-.]{6,}[\dOol]/g, function (m) {
+      var digits = (m.match(/\d/g) || []).length, letters = (m.match(/[OoIl|SBZ]/g) || []).length;
+      if (letters > 2 || digits < 6) return m;
+      return m.replace(/[OoIl|SBZ]/g, function (c) { return CONF[c]; });
+    });
+  }
+  // Pull out EVERY number in a line, even when several sit next to each other
+  function numbersInLine(line, defCc) {
+    var out = [], used = [], chunkRe = /[+(]?\d[\d ()\-.\u00A0]*\d/g, m;
+    while ((m = chunkRe.exec(line)) !== null) {
+      var parts = m[0].split(/\s{2,}|\u00A0{2,}/);
+      parts.forEach(function (part) {
+        var toks = part.trim().split(/\s+/).reduce(function (a, t) {
+          var dd = t.replace(/\D/g, "");
+          if (/^\d+$/.test(t) && dd.length === 20) a.push(dd.slice(0, 10), dd.slice(10)); else a.push(t);
+          return a;
+        }, []), n = toks.length, i = 0, j, cand, num, dg;
+        while (i < n) {
+          var hit = false;
+          for (j = i; j < Math.min(n, i + 6); j++) {
+            cand = toks.slice(i, j + 1).join(" ");
+            num = normalize(cand, defCc);
+            dg = cand.replace(/\D/g, "").length;
+            if (num && (!/^\s*\+/.test(cand) || dg >= 10 || j === n - 1)) {
+              out.push({ raw: cand, num: num }); used.push(cand); i = j + 1; hit = true; break;
+            }
+          }
+          if (!hit) i++;
+        }
+      });
+    }
+    return { found: out, used: used };
+  }
+  // Rebuild lines from word boxes so digit groups split by sparse OCR ("98765" / "43210") are joined again
+  function linesFromWords(words) {
+    var ws = (words || []).filter(function (w) { return w && w.text && w.bbox && String(w.text).trim(); });
+    ws.forEach(function (w) { w.cy = (w.bbox.y0 + w.bbox.y1) / 2; w.h = Math.max(1, w.bbox.y1 - w.bbox.y0); });
+    ws.sort(function (a, b) { return a.cy - b.cy; });
+    var rows = [], i, w, r;
+    for (i = 0; i < ws.length; i++) {
+      w = ws[i]; r = rows[rows.length - 1];
+      if (r && Math.abs(w.cy - r.cy) < Math.max(w.h, r.h) * 0.6) { r.w.push(w); r.cy = (r.cy * (r.w.length - 1) + w.cy) / r.w.length; r.h = Math.max(r.h, w.h); }
+      else rows.push({ w: [w], cy: w.cy, h: w.h });
+    }
+    return rows.map(function (r) {
+      r.w.sort(function (a, b) { return a.bbox.x0 - b.bbox.x0; });
+      return r.w.map(function (w, k) {
+        if (!k) return w.text;
+        var gap = w.bbox.x0 - r.w[k - 1].bbox.x1;
+        return (gap > r.h * 1.1 ? "   " : " ") + w.text;
+      }).join("");
+    }).join("\n");
+  }
+  function hamming(a, b) { if (a.length !== b.length) return 99; var d = 0, i; for (i = 0; i < a.length; i++) if (a[i] !== b[i]) d++; return d; }
+  // obs = one OCR run, as a list of text variants. Every number is counted once per run; one-off misreads that
+  // are 1-2 digits away from a number seen in several runs are discarded.
+  function voteContacts(obs, defCc) {
+    var map = {}, list = [];
+    obs.forEach(function (variants) {
+      var here = {};
+      variants.forEach(function (t) {
+        extractFromText(t, defCc).forEach(function (r) {
+          if (!here[r.num]) here[r.num] = { num: r.num, name: r.name };
+          else if (!here[r.num].name && r.name) here[r.num].name = r.name;
+        });
+      });
+      Object.keys(here).forEach(function (k) {
+        var h = here[k], m = map[k];
+        if (!m) { m = map[k] = { num: k, name: "", n: 0 }; list.push(m); }
+        m.n++; if (h.name && (!m.name || h.name.length > m.name.length)) m.name = h.name;
+      });
+    });
+    if (obs.length >= 3) {
+      var strong = list.filter(function (m) { return m.n >= 2; });
+      list = list.filter(function (m) {
+        if (m.n >= 2) return true;
+        return !strong.some(function (g) { return hamming(g.num, m.num) <= 2; });
+      });
+    }
+    return list.sort(function (a, b) { return b.n - a.n; });
+  }
+  function extractFromText(text, defCc) {
+    var found = [], seen = {};
+    text.split(/\r?\n/).forEach(function (line0) {
+      var line = fixConfusables(line0);
+      var r = numbersInLine(line, defCc);
+      if (!r.found.length) return;
+      var name = line;
+      r.used.forEach(function (x) { name = name.replace(x, " "); });
+      name = cleanImgName(name).replace(/\b(tel|telephone|mob|mobile|ph|phone|fax|cell|call|whatsapp|contact|office|res|no)\b/gi, " ").replace(/\s+/g, " ").trim();
+      if (name.length > 40 || name.length < 2) name = "";
+      r.found.forEach(function (f) {
+        if (seen[f.num]) { if (!seen[f.num].name && name) seen[f.num].name = name; return; }
+        var row = { num: f.num, name: r.found.length === 1 ? name : "" };
+        seen[f.num] = row; found.push(row);
+      });
+    });
+    return found;
+  }
+
+  imgReadBtn.addEventListener("click", async function () {
+    if (!pendingImages.length) return;
+    ocrStopped = false; imgReadBtn.disabled = true; imgStopBtn.hidden = false;
+    var idx = 0;
+    try {
+      setImgStatus("Preparing the reading engine...");
+      await ensureOcrScript();
+      var nW = Math.max(1, Math.min(3, (navigator.hardwareConcurrency || 2) - 1)), w;
+      var cur = { img: 0, done: 0, total: 0 };
+      var logger = function (m) { if (m.status && m.status !== "recognizing text" && m.progress < 1) setImgStatus("Preparing the reading engine (" + m.status + ")..."); };
+      ocrWorkers = [];
+      ocrWorkers.push(await makeOcrWorker(logger));
+      for (w = 1; w < nW; w++) { try { ocrWorkers.push(await makeOcrWorker(logger)); } catch (e0) { break; } }
+      for (w = 0; w < ocrWorkers.length; w++) {
+        await ocrWorkers[w].setParameters({ tessedit_pageseg_mode: "11", preserve_interword_spaces: "1", user_defined_dpi: "300" });
+      }
+      var texts = [];
+      for (idx = 0; idx < pendingImages.length; idx++) {
+        if (ocrStopped) throw { code: "cancelled" };
+        cur.img = idx; cur.done = 0;
+        var im = await loadImgEl(pendingImages[idx]);
+        var plan = planPasses(im);
+        cur.total = plan.passes.length;
+        var queue = plan.passes.slice();
+        setImgStatus("Reading image " + (idx + 1) + " of " + pendingImages.length + "...");
+        await Promise.all(ocrWorkers.map(async function (wk) {
+          var job;
+          while ((job = queue.shift())) {
+            if (ocrStopped) return;
+            var cv = passCanvas(im, job, plan.invert);
+            var modes = ["11", "6"], mi, res, v;
+            for (mi = 0; mi < modes.length; mi++) {
+              if (ocrStopped) return;
+              await wk.setParameters({ tessedit_pageseg_mode: modes[mi] });
+              res = await wk.recognize(cv);
+              v = [res.data.text || ""];
+              try { v.push(linesFromWords(res.data.words)); } catch (eW) {}
+              texts.push(v);
+            }
+            cur.done++;
+            setImgStatus("Reading image " + (cur.img + 1) + " of " + pendingImages.length + " (part " + cur.done + " of " + cur.total + ")...");
+          }
+        }));
+      }
+      if (ocrStopped) throw { code: "cancelled" };
+      var defCc = ccEl.value.replace(/\D/g, "") || "91";
+      var rows = [], rowMap = {};
+      voteContacts(texts, defCc).forEach(function (r) { rows.push({ num: r.num, name: r.name }); });
+      var before = imgContacts.length, seenNow = {};
+      imgContacts.forEach(function (c) { seenNow[c.num] = true; });
+      var added = 0;
+      rows.forEach(function (r) { if (!seenNow[r.num]) { seenNow[r.num] = true; imgContacts.push(r); added++; } });
+      store("rane_img", JSON.stringify(imgContacts));
+      pendingImages = []; drawImgThumbs(); refreshImgBtn();
+      build(); renderAll();
+      if (!rows.length) setImgStatus("No phone number found. Try a clearer image, or upload fewer cards per photo.", true);
+      else {
+        setImgStatus("Added " + added + " new contact" + (added === 1 ? "" : "s") + " from the image" + (pendingImages.length > 1 ? "s" : "") + ". Compare with your image, then find them under \"All contacts\" to send.");
+        imgCountEl.hidden = !imgContacts.length;
+        if (imgContacts.length) imgCountEl.innerHTML = imgContacts.length + " contact" + (imgContacts.length === 1 ? "" : "s") + " added from images so far. <button class=\"undo\" type=\"button\" id=\"imgClearAll\">Remove all</button>";
+      }
+      var listSecEl = $("listSec");
+      if (listSecEl && !listSecEl.hidden) listSecEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (e) {
+      if (e && e.code === "cancelled") setImgStatus("Stopped.");
+      else {
+        var why = (e && (e.message || (typeof e === "string" ? e : ""))) || "unknown error";
+        var inClaude = false; try { inClaude = window.self !== window.top; } catch (x) { inClaude = true; }
+        setImgStatus("Could not read the image (" + why + "). " + (inClaude
+          ? "This page is running inside a preview that blocks downloads. Open the saved file directly in Chrome or Edge instead."
+          : "The reading engine downloads from jsDelivr or unpkg the first time. If your network, VPN or ad blocker blocks them, try another network or turn the blocker off for this page."), true);
+      }
+    } finally {
+      try { for (var q = 0; q < ocrWorkers.length; q++) await ocrWorkers[q].terminate(); } catch (e2) {}
+      ocrWorkers = []; imgStopBtn.hidden = true; refreshImgBtn();
+    }
+  });
+  imgStopBtn.addEventListener("click", function () { ocrStopped = true; ocrWorkers.forEach(function (wk) { try { wk.terminate(); } catch (e) {} }); setImgStatus("Stopped."); imgStopBtn.hidden = true; refreshImgBtn(); });
+  document.addEventListener("click", function (e) {
+    if (e.target && e.target.id === "imgClearAll") {
+      imgContacts = []; store("rane_img", "[]"); imgCountEl.hidden = true; build(); renderAll();
+    }
+  });
+
+  // ---------- start ----------
+  try {
+    sent = JSON.parse(load("rane_sent") || "{}") || {};
+    var cutoff = iso(addDays(today0(), -60));
+    Object.keys(sent).forEach(function (k) { if (k.split("|")[0] < cutoff) delete sent[k]; });
+  } catch (e) { sent = {}; }
+  try { imgContacts = JSON.parse(load("rane_img") || "[]") || []; } catch (e) { imgContacts = []; }
+  try {
+    var saved = JSON.parse(load("rane_data") || "null");
+    if (saved && saved.raw && saved.raw.rows) { S.raw = saved.raw; S.map = saved.map; S.fileName = saved.fileName || ""; }
+  } catch (e) {}
+  build();
+  if (imgContacts.length) { imgCountEl.hidden = false; imgCountEl.innerHTML = imgContacts.length + " contact" + (imgContacts.length === 1 ? "" : "s") + " added from images so far. <button class=\"undo\" type=\"button\" id=\"imgClearAll\">Remove all</button>"; }
+  renderAll();
+})();
+</script>
+</body>
+</html>
